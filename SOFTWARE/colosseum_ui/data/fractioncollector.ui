@@ -268,21 +268,6 @@
     </property>
     <item>
      <property name="text">
-      <string>0.5mL</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>1.5mL</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>2.0mL</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
       <string>5.0mL</string>
      </property>
     </item>
