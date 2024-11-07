@@ -169,8 +169,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
                 self.vol_dispensed_unit.setText(self.volume_unit)
                 self.time_elapsed_unit.setText(self.time_unit)
-                # self.time_elapsed.display((elapsed * 3600) / TIMEUNIT_TO_HR[self.time_unit])
-                self.time_elapsed.display((elapsed) / TIMEUNIT_TO_HR[self.time_unit])
+                self.time_elapsed.display((elapsed * 3600) / TIMEUNIT_TO_HR[self.time_unit])
                 self.vol_dispensed.display((elapsed * flow_value) / VOLUNIT_TO_UL[self.volume_unit])
 
             # Do some stuff if the run is finished.
