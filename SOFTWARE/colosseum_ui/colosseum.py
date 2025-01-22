@@ -73,7 +73,7 @@ class Colosseum:
         for i in range(self.position, n_fractions+1):
             command = COMMANDS[i]
             # TODO: add priming time instead of stoptime
-            time.sleep(stop_time-0.105)
+            time.sleep(stop_time-0.110)
             logger.debug(f'[run] sending command {command}')
             talk(self.serial, [command], dry_run=self.testing)
             self.position = i + 1
