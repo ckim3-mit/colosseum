@@ -45,43 +45,52 @@ class Colosseum:
         time.sleep(1)
 
     @classmethod
-    def calculate_collection_time(
-        cls, size_value, size_unit, flow_value, flow_unit
-    ):
-        flow_value *= FRUNIT_TO_UL_HR[flow_unit]
-        size_value *= FRACSIZE_TO_UL[size_unit]
-        stoptime = size_value/flow_value*3600
+    def calculate_collection_time(cls, size_value, size_unit, flow_value, flow_unit):
+        flow_value_ul_hr = flow_value * FRUNIT_TO_UL_HR[flow_unit]
+        size_value_ul = size_value * FRACSIZE_TO_UL[size_unit]
+        stoptime = size_value_ul / flow_value_ul_hr * 3600
         return stoptime
 
     def run(
-        self, size_value, size_unit, flow_value, flow_unit, n_fractions
+        self,
+        size_value1, n_fractions1,
+        size_value2, n_fractions2,
+        size_value3, n_fractions3,
+        size_value4, n_fractions4,
+        size_value5, n_fractions5,
+        size_unit, flow_value, flow_unit
     ):
         if self.done:
             raise Exception('run already completed')
         self.run_cache = locals().copy()
         del self.run_cache['self']
         self.running = True
-        stop_time = self.calculate_collection_time(
-            size_value,
-            size_unit,
-            flow_value,
-            flow_unit,
-        )
         if self.start_time is None:
             self.start_time = time.time()
-        # Note: we assume the run starts at the 0th tube
-        for i in range(self.position, n_fractions+1):
-            command = COMMANDS[i]
-            # TODO: add priming time instead of stoptime
-            time.sleep(stop_time-0.110)
-            logger.debug(f'[run] sending command {command}')
-            talk(self.serial, [command], dry_run=self.testing)
-            self.position = i + 1
 
-            if not self.running:
-                logger.info(f'[run] pausing')
-                return
-
+        group_params = [
+            (size_value1, n_fractions1),
+            (size_value2, n_fractions2),
+            (size_value3, n_fractions3),
+            (size_value4, n_fractions4),
+            (size_value5, n_fractions5),
+        ]
+        tube_index = self.position
+        for group_idx, (size_value, n_fractions) in enumerate(group_params):
+            stop_time = self.calculate_collection_time(size_value, size_unit, flow_value, flow_unit)
+            for j in range(n_fractions):
+                if tube_index >= len(COMMANDS):
+                    logger.warning(f"[run] Tube index {tube_index} exceeds available commands.")
+                    break
+                command = COMMANDS[tube_index]
+                time.sleep(max(stop_time-0.110, 0))
+                logger.debug(f'[run] sending command {command} (group {group_idx+1}, tube {tube_index})')
+                talk(self.serial, [command], dry_run=self.testing)
+                tube_index += 1
+                self.position = tube_index
+                if not self.running:
+                    logger.info(f'[run] pausing')
+                    return
         logger.info('[run] done')
         self.stop()
 

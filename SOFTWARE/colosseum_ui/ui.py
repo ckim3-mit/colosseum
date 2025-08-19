@@ -119,6 +119,74 @@ class PortSelectionPopup(QDialog):
         ))
 
 class MainWindow(QtWidgets.QMainWindow):
+    # Grouped fraction collection fields (user must add these to the .ui file)
+    self.group1_size_value_line = self.findChild(QtWidgets.QLineEdit, 'group1_size_value_line')
+    self.group1_n_fractions_line = self.findChild(QtWidgets.QLineEdit, 'group1_n_fractions_line')
+    self.group2_size_value_line = self.findChild(QtWidgets.QLineEdit, 'group2_size_value_line')
+    self.group2_n_fractions_line = self.findChild(QtWidgets.QLineEdit, 'group2_n_fractions_line')
+    self.group3_size_value_line = self.findChild(QtWidgets.QLineEdit, 'group3_size_value_line')
+    self.group3_n_fractions_line = self.findChild(QtWidgets.QLineEdit, 'group3_n_fractions_line')
+    self.group4_size_value_line = self.findChild(QtWidgets.QLineEdit, 'group4_size_value_line')
+    self.group4_n_fractions_line = self.findChild(QtWidgets.QLineEdit, 'group4_n_fractions_line')
+    self.group5_size_value_line = self.findChild(QtWidgets.QLineEdit, 'group5_size_value_line')
+    self.group5_n_fractions_line = self.findChild(QtWidgets.QLineEdit, 'group5_n_fractions_line')
+    # Validators for new group fields
+    self.group1_size_value_line.setValidator(double_validator)
+    self.group1_n_fractions_line.setValidator(int_validator)
+    self.group2_size_value_line.setValidator(double_validator)
+    self.group2_n_fractions_line.setValidator(int_validator)
+    self.group3_size_value_line.setValidator(double_validator)
+    self.group3_n_fractions_line.setValidator(int_validator)
+    self.group4_size_value_line.setValidator(double_validator)
+    self.group4_n_fractions_line.setValidator(int_validator)
+    self.group5_size_value_line.setValidator(double_validator)
+    self.group5_n_fractions_line.setValidator(int_validator)
+    def run_grouped_pressed(self):
+        logging.info('run grouped button pressed')
+        # Read all 5 group size values and n_fractions
+        group_values = []
+        group_n_fracs = []
+        for i in range(1, 6):
+            size_value_line = getattr(self, f'group{i}_size_value_line')
+            n_fractions_line = getattr(self, f'group{i}_n_fractions_line')
+            size_value = size_value_line.text()
+            n_fractions = n_fractions_line.text()
+            if not is_float(size_value):
+                self.show_error_popup(f'Group {i}: Size value must be a number.', title='Input error')
+                return
+            if not is_int(n_fractions):
+                self.show_error_popup(f'Group {i}: Number of fractions must be an integer.', title='Input error')
+                return
+            group_values.append(float(size_value))
+            group_n_fracs.append(int(n_fractions))
+
+        # Shared parameters
+        size_unit = self.unit1_combo.currentText()  # or another shared unit combo
+        flow_value = self.flowrate_line.text()
+        flow_unit = self.flowunit_combo.currentText()
+        if not is_float(flow_value):
+            self.show_error_popup('Flow rate must be a number.', title='Input error')
+            return
+        flow_value = float(flow_value)
+
+        self.disable_inputs()
+        t = threading.Thread(
+            target=self.colosseum.run,
+            args=(
+                group_values[0], group_n_fracs[0],
+                group_values[1], group_n_fracs[1],
+                group_values[2], group_n_fracs[2],
+                group_values[3], group_n_fracs[3],
+                group_values[4], group_n_fracs[4],
+                size_unit, flow_value, flow_unit
+            ),
+            daemon=True,
+        )
+        t.start()
+        self.run_button.setEnabled(False)
+        self.pause_button.setEnabled(True)
+        self.stop_button.setEnabled(True)
+        self.status_label.setText('Running')
     def __init__(self, testing=False):
         super(MainWindow, self).__init__()
         uic.loadUi(UI_PATH, self)
