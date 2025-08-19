@@ -112,19 +112,19 @@
     <property name="geometry">
      <rect>
       <x>70</x>
-      <y>295</y>
-      <width>171</width>
+      <y>330</y>
+      <width>51</width>
       <height>31</height>
      </rect>
     </property>
     <item>
      <property name="text">
-      <string>Total time</string>
+      <string>Total volume</string>
      </property>
     </item>
     <item>
      <property name="text">
-      <string>Total volume</string>
+      <string>Total time</string>
      </property>
     </item>
    </widget>
@@ -132,28 +132,28 @@
     <property name="geometry">
      <rect>
       <x>70</x>
-      <y>335</y>
-      <width>171</width>
+      <y>290</y>
+      <width>81</width>
       <height>31</height>
      </rect>
     </property>
     <item>
      <property name="text">
-      <string>Volume per fraction</string>
+      <string>Number of fractions</string>
      </property>
     </item>
     <item>
      <property name="text">
-      <string>Number of fractions</string>
+      <string>Volume per fraction</string>
      </property>
     </item>
    </widget>
    <widget class="QLineEdit" name="value1_line">
     <property name="geometry">
      <rect>
-      <x>260</x>
-      <y>295</y>
-      <width>91</width>
+      <x>120</x>
+      <y>330</y>
+      <width>16</width>
       <height>31</height>
      </rect>
     </property>
@@ -167,9 +167,9 @@
    <widget class="QLineEdit" name="value2_line">
     <property name="geometry">
      <rect>
-      <x>260</x>
-      <y>335</y>
-      <width>91</width>
+      <x>150</x>
+      <y>290</y>
+      <width>16</width>
       <height>31</height>
      </rect>
     </property>
@@ -177,8 +177,8 @@
    <widget class="QComboBox" name="unit1_combo">
     <property name="geometry">
      <rect>
-      <x>370</x>
-      <y>295</y>
+      <x>430</x>
+      <y>240</y>
       <width>101</width>
       <height>31</height>
      </rect>
@@ -187,8 +187,8 @@
    <widget class="QComboBox" name="unit2_combo">
     <property name="geometry">
      <rect>
-      <x>370</x>
-      <y>335</y>
+      <x>430</x>
+      <y>200</y>
       <width>101</width>
       <height>31</height>
      </rect>
@@ -653,7 +653,7 @@
    <widget class="QLineEdit" name="group1_size_value_line">
     <property name="geometry">
      <rect>
-      <x>70</x>
+      <x>80</x>
       <y>200</y>
       <width>51</width>
       <height>31</height>
@@ -663,7 +663,7 @@
    <widget class="QLineEdit" name="group2_size_value_line">
     <property name="geometry">
      <rect>
-      <x>140</x>
+      <x>150</x>
       <y>200</y>
       <width>51</width>
       <height>31</height>
@@ -673,7 +673,7 @@
    <widget class="QLineEdit" name="group3_size_value_line">
     <property name="geometry">
      <rect>
-      <x>210</x>
+      <x>220</x>
       <y>200</y>
       <width>51</width>
       <height>31</height>
@@ -683,7 +683,7 @@
    <widget class="QLineEdit" name="group4_size_value_line">
     <property name="geometry">
      <rect>
-      <x>280</x>
+      <x>290</x>
       <y>200</y>
       <width>51</width>
       <height>31</height>
@@ -693,7 +693,7 @@
    <widget class="QLineEdit" name="group5_size_value_line">
     <property name="geometry">
      <rect>
-      <x>350</x>
+      <x>360</x>
       <y>200</y>
       <width>51</width>
       <height>31</height>
@@ -703,20 +703,20 @@
    <widget class="QLabel" name="group_size_label">
     <property name="geometry">
      <rect>
-      <x>20</x>
+      <x>30</x>
       <y>200</y>
-      <width>41</width>
-      <height>19</height>
+      <width>51</width>
+      <height>21</height>
      </rect>
     </property>
     <property name="text">
-     <string>Group Size</string>
+     <string>Num frac / group</string>
     </property>
    </widget>
    <widget class="QLineEdit" name="group1_n_fractions_line">
     <property name="geometry">
      <rect>
-      <x>70</x>
+      <x>80</x>
       <y>240</y>
       <width>51</width>
       <height>31</height>
@@ -726,7 +726,7 @@
    <widget class="QLineEdit" name="group2_n_fractions_line">
     <property name="geometry">
      <rect>
-      <x>140</x>
+      <x>150</x>
       <y>240</y>
       <width>51</width>
       <height>31</height>
@@ -736,7 +736,7 @@
    <widget class="QLineEdit" name="group3_n_fractions_line">
     <property name="geometry">
      <rect>
-      <x>210</x>
+      <x>220</x>
       <y>240</y>
       <width>51</width>
       <height>31</height>
@@ -746,7 +746,7 @@
    <widget class="QLineEdit" name="group4_n_fractions_line">
     <property name="geometry">
      <rect>
-      <x>280</x>
+      <x>290</x>
       <y>240</y>
       <width>51</width>
       <height>31</height>
@@ -756,7 +756,7 @@
    <widget class="QLineEdit" name="group5_n_fractions_line">
     <property name="geometry">
      <rect>
-      <x>350</x>
+      <x>360</x>
       <y>240</y>
       <width>51</width>
       <height>31</height>
@@ -766,14 +766,14 @@
    <widget class="QLabel" name="group_size_label_2">
     <property name="geometry">
      <rect>
-      <x>20</x>
-      <y>250</y>
+      <x>30</x>
+      <y>240</y>
       <width>41</width>
       <height>19</height>
      </rect>
     </property>
     <property name="text">
-     <string>Group # tubes</string>
+     <string>Vol / group</string>
     </property>
    </widget>
   </widget>

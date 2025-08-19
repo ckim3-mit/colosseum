@@ -119,67 +119,6 @@ class PortSelectionPopup(QDialog):
         ))
 
 class MainWindow(QtWidgets.QMainWindow):
-    # Grouped fraction collection fields (user must add these to the .ui file)
-    def __init__(self, testing=False):
-        super(MainWindow, self).__init__()
-        uic.loadUi(UI_PATH, self)
-        # ...existing code...
-        self.group1_size_value_line = self.findChild(QtWidgets.QLineEdit, 'group1_size_value_line')
-        self.group1_n_fractions_line = self.findChild(QtWidgets.QLineEdit, 'group1_n_fractions_line')
-        self.group2_size_value_line = self.findChild(QtWidgets.QLineEdit, 'group2_size_value_line')
-        self.group2_n_fractions_line = self.findChild(QtWidgets.QLineEdit, 'group2_n_fractions_line')
-        self.group3_size_value_line = self.findChild(QtWidgets.QLineEdit, 'group3_size_value_line')
-        self.group3_n_fractions_line = self.findChild(QtWidgets.QLineEdit, 'group3_n_fractions_line')
-        self.group4_size_value_line = self.findChild(QtWidgets.QLineEdit, 'group4_size_value_line')
-        self.group4_n_fractions_line = self.findChild(QtWidgets.QLineEdit, 'group4_n_fractions_line')
-        self.group5_size_value_line = self.findChild(QtWidgets.QLineEdit, 'group5_size_value_line')
-        self.group5_n_fractions_line = self.findChild(QtWidgets.QLineEdit, 'group5_n_fractions_line')
-    def run_grouped_pressed(self):
-        logging.info('run grouped button pressed')
-        # Read all 5 group size values and n_fractions
-        group_values = []
-        group_n_fracs = []
-        for i in range(1, 6):
-            size_value_line = getattr(self, f'group{i}_size_value_line')
-            n_fractions_line = getattr(self, f'group{i}_n_fractions_line')
-            size_value = size_value_line.text()
-            n_fractions = n_fractions_line.text()
-            if not is_float(size_value):
-                self.show_error_popup(f'Group {i}: Size value must be a number.', title='Input error')
-                return
-            if not is_int(n_fractions):
-                self.show_error_popup(f'Group {i}: Number of fractions must be an integer.', title='Input error')
-                return
-            group_values.append(float(size_value))
-            group_n_fracs.append(int(n_fractions))
-
-        # Shared parameters
-        size_unit = self.unit1_combo.currentText()  # or another shared unit combo
-        flow_value = self.flowrate_line.text()
-        flow_unit = self.flowunit_combo.currentText()
-        if not is_float(flow_value):
-            self.show_error_popup('Flow rate must be a number.', title='Input error')
-            return
-        flow_value = float(flow_value)
-
-        self.disable_inputs()
-        t = threading.Thread(
-            target=self.colosseum.run,
-            args=(
-                group_values[0], group_n_fracs[0],
-                group_values[1], group_n_fracs[1],
-                group_values[2], group_n_fracs[2],
-                group_values[3], group_n_fracs[3],
-                group_values[4], group_n_fracs[4],
-                size_unit, flow_value, flow_unit
-            ),
-            daemon=True,
-        )
-        t.start()
-        self.run_button.setEnabled(False)
-        self.pause_button.setEnabled(True)
-        self.stop_button.setEnabled(True)
-        self.status_label.setText('Running')
     def __init__(self, testing=False):
         super(MainWindow, self).__init__()
         uic.loadUi(UI_PATH, self)
@@ -257,6 +196,68 @@ class MainWindow(QtWidgets.QMainWindow):
             sys.exit(1)
         return result
 
+    def run_grouped_pressed(self):
+        logging.info('run grouped button pressed')
+        # Read all 5 group size values and n_fractions
+        group_values = []
+        group_n_fracs = []
+        for i in range(1, 6):
+            size_value_line = getattr(self, f'group{i}_size_value_line')
+            n_fractions_line = getattr(self, f'group{i}_n_fractions_line')
+            size_value = size_value_line.text()
+            n_fractions = n_fractions_line.text()
+            if not is_float(size_value):
+                self.show_error_popup(f'Group {i}: Size value must be a number.', title='Input error')
+                return
+            if not is_int(n_fractions):
+                self.show_error_popup(f'Group {i}: Number of fractions must be an integer.', title='Input error')
+                return
+            group_values.append(float(size_value))
+            group_n_fracs.append(int(n_fractions))
+
+        # Shared parameters
+        size_unit = self.unit1_combo.currentText()  # or another shared unit combo
+        flow_value = self.flowrate_line.text()
+        flow_unit = self.flowunit_combo.currentText()
+        if not is_float(flow_value):
+            self.show_error_popup('Flow rate must be a number.', title='Input error')
+            return
+        flow_value = float(flow_value)
+
+        # Check that all 5 groups are filled
+        if len(group_values) != 5 or len(group_n_fracs) != 5:
+            logging.error(f'group_values: {group_values}, group_n_fracs: {group_n_fracs}')
+            self.show_error_popup('Please fill in all 5 group size and n_fractions fields.', title='Input error')
+            return
+
+        # Validate that size_unit is a valid volume unit
+        from .constants import FRACSIZE_TO_UL
+        if size_unit not in FRACSIZE_TO_UL:
+            self.show_error_popup(f'Size unit "{size_unit}" is not a valid volume unit. Please select a valid volume unit (e.g., mL, uL) for fraction size.', title='Unit error')
+            return
+
+        logging.debug(f'Calling run with: {group_values}, {group_n_fracs}, {size_unit}, {flow_value}, {flow_unit}')
+
+        self.disable_inputs()
+        t = threading.Thread(
+            target=self.colosseum.run,
+            args=(
+                group_values[0], group_n_fracs[0],
+                group_values[1], group_n_fracs[1],
+                group_values[2], group_n_fracs[2],
+                group_values[3], group_n_fracs[3],
+                group_values[4], group_n_fracs[4],
+                size_unit, flow_value, flow_unit
+            ),
+            daemon=True,
+        )
+        t.start()
+        self.run_button.setEnabled(False)
+        self.pause_button.setEnabled(True)
+        self.stop_button.setEnabled(True)
+        self.status_label.setText('Running')
+
+
     def setup_hooks(self):
         """
         Function to set up hooks from the .ui file into this class.
@@ -272,18 +273,34 @@ class MainWindow(QtWidgets.QMainWindow):
         self.tubeunit_combo = self.findChild(QtWidgets.QComboBox, 'tubeunit_combo')
 
         # Settings
-        self.setting1_combo = self.findChild(QtWidgets.QComboBox, 'setting1_combo')
-        self.unit1_combo = self.findChild(QtWidgets.QComboBox, 'unit1_combo')
-        self.setting2_combo = self.findChild(QtWidgets.QComboBox, 'setting2_combo')
-        self.unit2_combo = self.findChild(QtWidgets.QComboBox, 'unit2_combo')
+        # self.setting1_combo = self.findChild(QtWidgets.QComboBox, 'setting1_combo')
+        # self.unit1_combo = self.findChild(QtWidgets.QComboBox, 'unit1_combo')
+        # self.setting2_combo = self.findChild(QtWidgets.QComboBox, 'setting2_combo')
+        # self.unit2_combo = self.findChild(QtWidgets.QComboBox, 'unit2_combo')
         self.setting3_combo = self.findChild(QtWidgets.QComboBox, 'setting3_combo')
         self.unit3_combo = self.findChild(QtWidgets.QComboBox, 'unit3_combo')
         self.setting4_combo = self.findChild(QtWidgets.QComboBox, 'setting4_combo')
         self.unit4_combo = self.findChild(QtWidgets.QComboBox, 'unit4_combo')
-        self.value1_line = self.findChild(QtWidgets.QLineEdit, 'value1_line')
-        self.value2_line = self.findChild(QtWidgets.QLineEdit, 'value2_line')
+        # self.value1_line = self.findChild(QtWidgets.QLineEdit, 'value1_line')
+        # self.value2_line = self.findChild(QtWidgets.QLineEdit, 'value2_line')
         self.value3_line = self.findChild(QtWidgets.QLineEdit, 'value3_line')
         self.value4_line = self.findChild(QtWidgets.QLineEdit, 'value4_line')
+
+        # new additions, row 1 and 2 repurposed for groups
+        self.setting1_combo = self.findChild(QtWidgets.QComboBox, 'setting1_combo')
+        self.unit1_combo = self.findChild(QtWidgets.QComboBox, 'unit1_combo')
+        self.setting2_combo = self.findChild(QtWidgets.QComboBox, 'setting2_combo')
+        self.unit2_combo = self.findChild(QtWidgets.QComboBox, 'unit2_combo')
+        self.group1_size_value_line = self.findChild(QtWidgets.QLineEdit, 'group1_size_value_line')
+        self.group1_n_fractions_line = self.findChild(QtWidgets.QLineEdit, 'group1_n_fractions_line')
+        self.group2_size_value_line = self.findChild(QtWidgets.QLineEdit, 'group2_size_value_line')
+        self.group2_n_fractions_line = self.findChild(QtWidgets.QLineEdit, 'group2_n_fractions_line')
+        self.group3_size_value_line = self.findChild(QtWidgets.QLineEdit, 'group3_size_value_line')
+        self.group3_n_fractions_line = self.findChild(QtWidgets.QLineEdit, 'group3_n_fractions_line')
+        self.group4_size_value_line = self.findChild(QtWidgets.QLineEdit, 'group4_size_value_line')
+        self.group4_n_fractions_line = self.findChild(QtWidgets.QLineEdit, 'group4_n_fractions_line')
+        self.group5_size_value_line = self.findChild(QtWidgets.QLineEdit, 'group5_size_value_line')
+        self.group5_n_fractions_line = self.findChild(QtWidgets.QLineEdit, 'group5_n_fractions_line')
 
         # Buttons
         self.run_button = self.findChild(QtWidgets.QPushButton, 'runButton')
@@ -306,15 +323,27 @@ class MainWindow(QtWidgets.QMainWindow):
         double_validator.setBottom(0.)
         self.tube_count_line.setValidator(int_validator)
         self.flowrate_line.setValidator(double_validator)
-        self.value1_line.setValidator(double_validator)
-        self.value2_line.setValidator(double_validator)
+        # self.value1_line.setValidator(double_validator)
+        # self.value2_line.setValidator(double_validator)
 
     def setup_params_table(self):
         self.rows = {
-            1: make_row_dict(self.setting1_combo, self.value1_line, self.unit1_combo),
-            2: make_row_dict(self.setting2_combo, self.value2_line, self.unit2_combo),
+            1: make_row_dict(self.setting1_combo, self.group1_n_fractions_line, self.unit1_combo),
+            2: make_row_dict(self.setting2_combo, self.group1_size_value_line, self.unit2_combo), 
             3: make_row_dict(self.setting3_combo, self.value3_line, self.unit3_combo),
             4: make_row_dict(self.setting4_combo, self.value4_line, self.unit4_combo),
+
+            # 5: make_row_dict(self.setting2_combo, self.group1_size_value_line, self.unit2_combo),
+            # 6: make_row_dict(self.setting2_combo, self.group2_size_value_line, self.unit2_combo),
+            5: make_row_dict(self.setting2_combo, self.group2_size_value_line, self.unit2_combo),
+            6: make_row_dict(self.setting2_combo, self.group3_size_value_line, self.unit2_combo),
+            7: make_row_dict(self.setting2_combo, self.group4_size_value_line, self.unit2_combo),
+            8: make_row_dict(self.setting2_combo, self.group5_size_value_line, self.unit2_combo), 
+
+            9: make_row_dict(self.setting1_combo, self.group2_n_fractions_line, self.unit1_combo),
+            10: make_row_dict(self.setting1_combo, self.group3_n_fractions_line, self.unit1_combo),
+            11: make_row_dict(self.setting1_combo, self.group4_n_fractions_line, self.unit1_combo),
+            12: make_row_dict(self.setting1_combo, self.group5_n_fractions_line, self.unit1_combo),
         }
 
         # Setup inter-row listeners.
@@ -329,11 +358,11 @@ class MainWindow(QtWidgets.QMainWindow):
         self.flowrate_line.textChanged.connect(self.update_row4)
         self.flowunit_combo.currentIndexChanged.connect(self.update_row3)
         self.flowunit_combo.currentIndexChanged.connect(self.update_row4)
-        self.value1_line.textChanged.connect(self.update_row3)
+        self.group5_n_fractions_line.textChanged.connect(self.update_row3)
         self.unit1_combo.currentIndexChanged.connect(self.update_row3)
-        self.value1_line.textChanged.connect(self.update_row4)
+        self.group5_n_fractions_line.textChanged.connect(self.update_row4)
         self.unit1_combo.currentIndexChanged.connect(self.update_row4)
-        self.value2_line.textChanged.connect(self.update_row4)
+        self.group5_size_value_line.textChanged.connect(self.update_row4)
         self.unit2_combo.currentIndexChanged.connect(self.update_row4)
         self.unit3_combo.currentIndexChanged.connect(self.update_row3)
         self.unit4_combo.currentIndexChanged.connect(self.update_row3)
@@ -346,8 +375,8 @@ class MainWindow(QtWidgets.QMainWindow):
                 target.setEnabled(False)
             else:
                 target.setEnabled(True)
-        self.value1_line.textChanged.connect(partial(disable, self.setting1_combo))
-        self.value2_line.textChanged.connect(partial(disable, self.setting2_combo))
+        self.group1_n_fractions_line.textChanged.connect(partial(disable, self.setting1_combo))
+        self.group1_size_value_line.textChanged.connect(partial(disable, self.setting2_combo))
 
     def disable_inputs(self):
         inputs = [
@@ -361,8 +390,18 @@ class MainWindow(QtWidgets.QMainWindow):
             self.unit2_combo,
             self.unit3_combo,
             self.unit4_combo,
-            self.value1_line,
-            self.value2_line,
+            self.group1_size_value_line,
+            self.group2_size_value_line,
+            self.group3_size_value_line,
+            self.group4_size_value_line,
+            self.group5_size_value_line,
+            self.group1_n_fractions_line,
+            self.group2_n_fractions_line,
+            self.group3_n_fractions_line,
+            self.group4_n_fractions_line,
+            self.group5_n_fractions_line,
+            # self.value1_line,
+            # self.value2_line,
         ]
 
         for input in inputs:
@@ -372,7 +411,12 @@ class MainWindow(QtWidgets.QMainWindow):
         logger.info('updating row 3')
         flowrate = self.get_flowrate_text()
         row1 = self.get_row_contents_text(self.rows[1])
-        #row2 = self.get_row_contents_text(self.rows[2])
+        row9 = self.get_row_contents_text(self.rows[9])
+        row10 = self.get_row_contents_text(self.rows[10])
+        row11 = self.get_row_contents_text(self.rows[11])
+        row12 = self.get_row_contents_text(self.rows[12])
+
+        # row2 = self.get_row_contents_text(self.rows[2])
 
         # Check if flowrate and row1 values are valid.
         if not (is_float(flowrate['value']) and is_float(row1['value'])):
@@ -386,6 +430,10 @@ class MainWindow(QtWidgets.QMainWindow):
             row3value = vol_from_time(flowrate, row1, row3)
         else:
             row3value = time_from_vol(flowrate, row1, row3)
+        row3value += time_from_vol(flowrate, row9, row3)
+        row3value += time_from_vol(flowrate, row10, row3)
+        row3value += time_from_vol(flowrate, row11, row3)
+        row3value += time_from_vol(flowrate, row12, row3)
 
         self.rows[3]['value'].setText(str(row3value))
 
@@ -441,7 +489,7 @@ class MainWindow(QtWidgets.QMainWindow):
         set_units_of_combo(setting_combo, unit_combo)
 
     def setup_buttons(self):
-        self.run_button.clicked.connect(self.run_pressed)
+        self.run_button.clicked.connect(self.run_grouped_pressed)
         self.pause_button.clicked.connect(self.pause_pressed)
         self.resume_button.clicked.connect(self.resume_pressed)
         self.stop_button.clicked.connect(self.stop_pressed)
@@ -451,41 +499,45 @@ class MainWindow(QtWidgets.QMainWindow):
         self.stop_button.setEnabled(False)
 
     def run_pressed(self):
-        logging.info('run button pressed')
+        logging.info('run button pressed (grouped logic)')
+        # Read all 5 group size values and n_fractions
+        group_values = [] # input2's
+        group_n_fracs = [] # input1's
+        for i in range(1, 6):
+            size_value_line = getattr(self, f'group{i}_size_value_line')
+            n_fractions_line = getattr(self, f'group{i}_n_fractions_line')
+            size_value = size_value_line.text()
+            n_fractions = n_fractions_line.text()
+            if not is_float(size_value):
+                self.show_error_popup(f'Group {i}: Size value must be a number.', title='Input error')
+                return
+            if not is_int(n_fractions):
+                self.show_error_popup(f'Group {i}: Number of fractions must be an integer.', title='Input error')
+                return
+            group_values.append(float(size_value))
+            group_n_fracs.append(int(n_fractions))
+
+        # Shared parameters
+        size_unit = self.unit1_combo.currentText()  # or another shared unit combo
+        flow_value = self.flowrate_line.text()
+        flow_unit = self.flowunit_combo.currentText()
         tube_count = self.tube_count_line.text()
-        input1 = self.value1_line.text()
-        input2 = self.value2_line.text()
-        input3 = self.flowrate_line.text()
-
-        # Check for any invalid inputs
-        invalid = []
-        if not is_int(tube_count):
-            invalid.append(f'"{self.tube_count_label.text()}" needs to be a number')
-        if not is_float(input3):
-            invalid.append(f'"{self.flowrate_label.text()}" needs to be a number')
-        if not is_float(input1):
-            invalid.append(f'"{self.setting1_combo.currentText()}" needs to be a number')
-        if not is_float(input2):
-            invalid.append(f'"{self.setting2_combo.currentText()}" needs to be a number')
-
-        if invalid:
-            error_messsage = '\n'.join(invalid)
-            self.show_error_popup(error_messsage, title='Input error')
-            return
 
         fr_dict = self.get_flowrate_text()
         frvalue = float(fr_dict['value'])
         frunit = fr_dict['unit']
 
-        n_fractions = None
+        logging.debug(f'Calling run with: {group_values}, {group_n_fracs}, {size_unit}, {flow_value}, {flow_unit}')
+
+        n_fractions = 0.0
         for row in self.rows.values():
             # Find volume per fraction value and unit
-            if row['setting'].currentText() == 'Volume per fraction':
-                value = float(row['value'].text())
-                unit = row['unit'].currentText()
+            # if row['setting'].currentText() == 'Volume per fraction':
+                # value = float(row['value'].text())
+                # unit = row['unit'].currentText()
             # Find volume per fraction value and unit
-            elif row['setting'].currentText() == 'Number of fractions':
-                n_fractions = float((row['value'].text()))
+            if row['setting'].currentText() == 'Number of fractions':
+                n_fractions += float((row['value'].text()))
             # Find volume unit
             elif row['setting'].currentText() == 'Total volume':
                 self.volume_unit = row['unit'].currentText()
@@ -511,39 +563,19 @@ class MainWindow(QtWidgets.QMainWindow):
                 title='Input error'
             )
             return
-
-        tube_size_text = self.tubeunit_combo.currentText()
-        tube_size = tube_size_text[:-2]
-        tube_unit = tube_size_text[-2:]
-        if value * VOLUNIT_TO_UL[unit] > float(tube_size) * VOLUNIT_TO_UL[tube_unit]:
-            self.show_error_popup(
-                f'Volume per fraction exceeds tube size',
-                title='Input error'
-            )
-            return
-
-        # Check number of tubes and display warning if tube count < num fractions
-        n_tubes = int(tube_count)
-        if n_tubes < n_fractions:
-            result = self.show_message_popup(
-                'Warning',
-                (
-                    f'Number of fractions ({n_fractions}) is greater than '
-                    f'number of tubes ({n_tubes}). Continuing may cause fractions to '
-                    f'be dispensed into the collector and damage the internals. '
-                    'Continue?'
-                ),
-                icon=QMessageBox.Warning,
-                buttons=QMessageBox.Yes | QMessageBox.No
-            )
-            if result != QMessageBox.Yes:
-                return
-
+        
         self.disable_inputs()
         t = threading.Thread(
             target=self.colosseum.run,
-            args=(value, unit, frvalue, frunit, n_fractions),
-            daemon=True, # terminate thread if UI is terminated
+            args=(
+                group_values[0], group_n_fracs[0],
+                group_values[1], group_n_fracs[1],
+                group_values[2], group_n_fracs[2],
+                group_values[3], group_n_fracs[3],
+                group_values[4], group_n_fracs[4],
+                size_unit, flow_value, flow_unit
+            ),
+            daemon=True,
         )
         t.start()
         self.run_button.setEnabled(False)
