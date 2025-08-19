@@ -120,27 +120,20 @@ class PortSelectionPopup(QDialog):
 
 class MainWindow(QtWidgets.QMainWindow):
     # Grouped fraction collection fields (user must add these to the .ui file)
-    self.group1_size_value_line = self.findChild(QtWidgets.QLineEdit, 'group1_size_value_line')
-    self.group1_n_fractions_line = self.findChild(QtWidgets.QLineEdit, 'group1_n_fractions_line')
-    self.group2_size_value_line = self.findChild(QtWidgets.QLineEdit, 'group2_size_value_line')
-    self.group2_n_fractions_line = self.findChild(QtWidgets.QLineEdit, 'group2_n_fractions_line')
-    self.group3_size_value_line = self.findChild(QtWidgets.QLineEdit, 'group3_size_value_line')
-    self.group3_n_fractions_line = self.findChild(QtWidgets.QLineEdit, 'group3_n_fractions_line')
-    self.group4_size_value_line = self.findChild(QtWidgets.QLineEdit, 'group4_size_value_line')
-    self.group4_n_fractions_line = self.findChild(QtWidgets.QLineEdit, 'group4_n_fractions_line')
-    self.group5_size_value_line = self.findChild(QtWidgets.QLineEdit, 'group5_size_value_line')
-    self.group5_n_fractions_line = self.findChild(QtWidgets.QLineEdit, 'group5_n_fractions_line')
-    # Validators for new group fields
-    self.group1_size_value_line.setValidator(double_validator)
-    self.group1_n_fractions_line.setValidator(int_validator)
-    self.group2_size_value_line.setValidator(double_validator)
-    self.group2_n_fractions_line.setValidator(int_validator)
-    self.group3_size_value_line.setValidator(double_validator)
-    self.group3_n_fractions_line.setValidator(int_validator)
-    self.group4_size_value_line.setValidator(double_validator)
-    self.group4_n_fractions_line.setValidator(int_validator)
-    self.group5_size_value_line.setValidator(double_validator)
-    self.group5_n_fractions_line.setValidator(int_validator)
+    def __init__(self, testing=False):
+        super(MainWindow, self).__init__()
+        uic.loadUi(UI_PATH, self)
+        # ...existing code...
+        self.group1_size_value_line = self.findChild(QtWidgets.QLineEdit, 'group1_size_value_line')
+        self.group1_n_fractions_line = self.findChild(QtWidgets.QLineEdit, 'group1_n_fractions_line')
+        self.group2_size_value_line = self.findChild(QtWidgets.QLineEdit, 'group2_size_value_line')
+        self.group2_n_fractions_line = self.findChild(QtWidgets.QLineEdit, 'group2_n_fractions_line')
+        self.group3_size_value_line = self.findChild(QtWidgets.QLineEdit, 'group3_size_value_line')
+        self.group3_n_fractions_line = self.findChild(QtWidgets.QLineEdit, 'group3_n_fractions_line')
+        self.group4_size_value_line = self.findChild(QtWidgets.QLineEdit, 'group4_size_value_line')
+        self.group4_n_fractions_line = self.findChild(QtWidgets.QLineEdit, 'group4_n_fractions_line')
+        self.group5_size_value_line = self.findChild(QtWidgets.QLineEdit, 'group5_size_value_line')
+        self.group5_n_fractions_line = self.findChild(QtWidgets.QLineEdit, 'group5_n_fractions_line')
     def run_grouped_pressed(self):
         logging.info('run grouped button pressed')
         # Read all 5 group size values and n_fractions
